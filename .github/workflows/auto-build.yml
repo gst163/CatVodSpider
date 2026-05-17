@@ -10,14 +10,17 @@ jobs:
     runs-on: windows-2022
     permissions:
       contents: write
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: 拉取代码
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 强制同步远程最新代码
+        run: git pull origin main --force
+        shell: cmd
 
       - name: 配置 JDK 11
         uses: actions/setup-java@v4
@@ -25,16 +28,15 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      - name: 执行打包
-        run: |
-          call gradlew.bat assembleRelease --no-daemon
-          call jar\genJar.bat
+      - name: 编译 + 打包
+        run: call buildAndGenJar.bat
         shell: cmd
 
-      - name: 自动提交 Jar 到仓库（无冲突版）
+      - name: 提交更新（无冲突版）
         uses: EndBug/add-and-commit@v9
         with:
-          message: "CI 自动更新 spider jar"
+          message: "CI 自动更新 Jar"
           add: "jar/custom_spider.jar jar/custom_spider.jar.md5"
           default_author: github_actions
-          pull_strategy: "ours"  # 核心：自动解决冲突
+          pull: "true"
+  
