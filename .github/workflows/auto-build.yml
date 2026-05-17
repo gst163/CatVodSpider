@@ -14,11 +14,10 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
-      - name: 拉取代码（允许强制拉取最新）
+      - name: 拉取代码
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
 
       - name: 配置 JDK 11
         uses: actions/setup-java@v4
@@ -32,16 +31,10 @@ jobs:
           call jar\genJar.bat
         shell: cmd
 
-      - name: 配置 Git（解决冲突核心）
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull origin main --rebase
-        shell: cmd
-
-      - name: 提交并推送（强制同步）
+      - name: 自动提交 Jar 到仓库（无冲突版）
         uses: EndBug/add-and-commit@v9
         with:
-          message: "CI 自动更新 Jar"
-          add: "jar/*.jar jar/*.md5"
-          push: "origin HEAD:main"
+          message: "CI 自动更新 spider jar"
+          add: "jar/custom_spider.jar jar/custom_spider.jar.md5"
+          default_author: github_actions
+          pull_strategy: "ours"  # 核心：自动解决冲突
