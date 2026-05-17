@@ -1,37 +1,37 @@
-name: 自动检测更新并打包 Spider Jar
+name: Auto Build Spider Jar
 
-# 只要代码一更新，立刻自动打包
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022       # 稳定版，不跳票
     permissions:
       contents: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # 强制Node24，消除警告
 
     steps:
-      - name: 拉取最新代码
+      - name: 拉取代码
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: 配置 JDK 11
         uses: actions/setup-java@v4
         with:
           java-version: '11'
           distribution: 'temurin'
-          cache: gradle
 
-      - name: 执行自动打包
-        run: call buildAndGenJar.bat ec
+      - name: 执行打包脚本
+        run: |
+          call gradlew.bat assembleRelease --no-daemon
+          call jar\genJar.bat
         shell: cmd
 
-      - name: 提交新版本 Jar 到仓库
+      - name: 提交 Jar
         uses: EndBug/add-and-commit@v9
         with:
-          message: "CI 自动构建：更新 spider jar"
+          message: "CI 自动更新 Jar"
           add: "jar/*.jar jar/*.md5"
           default_author: github_actions
