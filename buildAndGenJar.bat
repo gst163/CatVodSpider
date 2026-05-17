@@ -2,15 +2,15 @@
 setlocal
 cd /d "%~dp0"
 
-echo 开始构建 APK...
-call gradlew.bat assembleRelease --no-daemon -x lint
+echo 开始编译 Java 代码 + 构建 APK...
+call gradlew.bat compileReleaseJavaWithJavac assembleRelease --no-daemon -x lint
 
 if %errorlevel% neq 0 (
     echo 构建失败！
     exit /b 1
 )
 
-echo 开始生成 Jar...
+echo 生成最终 Jar...
 call jar\genJar.bat %1
 
 endlocal
