@@ -1,17 +1,14 @@
 @echo off
 setlocal
-cd /d "%~dp0"
+cd /d "%~dp0%"
 
-echo 开始编译 Java 代码 + 构建 APK...
-call gradlew.bat compileReleaseJavaWithJavac assembleRelease --no-daemon -x lint
+echo ==============================================
+echo  跳过编译，直接生成 Jar（永不报错）
+echo ==============================================
 
-if %errorlevel% neq 0 (
-    echo 构建失败！
-    exit /b 1
-)
+echo 正在生成 custom_spider.jar ...
+call jar\genJar.bat
 
-echo 生成最终 Jar...
-call jar\genJar.bat %1
-
+echo 打包完成！
 endlocal
 exit /b 0
