@@ -16,27 +16,22 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 强制同步远程最新代码
-        run: git pull origin main --force
-        shell: cmd
-
-      - name: 配置 JDK 11
+      - name: 配置 JDK 17（必须 17！）
         uses: actions/setup-java@v4
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
+          cache: gradle
 
       - name: 编译 + 打包
         run: call buildAndGenJar.bat
         shell: cmd
 
-      - name: 提交更新（无冲突版）
+      - name: 提交更新（永不冲突版）
         uses: EndBug/add-and-commit@v9
         with:
           message: "CI 自动更新 Jar"
-          add: "jar/custom_spider.jar jar/custom_spider.jar.md5"
+          add: "jar/*.jar jar/*.md5"
           default_author: github_actions
           pull: "true"
-  
