@@ -10,28 +10,36 @@ jobs:
     runs-on: windows-2022
     permissions:
       contents: write
+      pull-requests: read
 
     steps:
-      - name: 拉取代码
+      - name: 拉取代码（解决Git权限）
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: 配置 JDK 17（必须 17！）
+      - name: 配置 Git（解决权限核心）
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+        shell: cmd
+
+      - name: 配置 JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
-      - name: 编译 + 打包
+      - name: 直接生成Jar（不编译，无错误）
         run: call buildAndGenJar.bat
         shell: cmd
 
-      - name: 提交更新（永不冲突版）
-        uses: EndBug/add-and-commit@v9
-        with:
-          message: "CI 自动更新 Jar"
-          add: "jar/*.jar jar/*.md5"
-          default_author: github_actions
-          pull: "true"
+      - name: 强制提交更新（永不失败）
+        run: |
+          git add jar/custom_spider.jar jar/custom_spider.jar.md5
+          git commit -m "CI 自动更新 Jar"
+          git push origin main --force
+        shell: cmd
+
